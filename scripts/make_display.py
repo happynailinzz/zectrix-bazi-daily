@@ -133,11 +133,11 @@ def auto_data(date: dt.date):
 # --- 当日运势推演（简表：日干 × 建除 维度评分 + 判语） ---
 # 综合 = 各维度均值；事业/财运/感情 维度评分，score = 四维均值
 SCORING = {
-    # 日干 → (事业, 财运, 感情) 基准分（以癸水为例：事业75 财运60 感情65）
-    "癸": (75, 60, 65),
-    "戊": (70, 68, 62),
-    "甲": (78, 64, 70),
-    "乙": (72, 70, 68),
+    # 日干 → (事业, 财运, 感情) 基准分（拉开幅度，让不同日子的评分对比更明显）
+    "癸": (88, 45, 68),
+    "戊": (72, 60, 55),
+    "甲": (95, 55, 80),
+    "乙": (65, 90, 75),
 }
 # 建除 → 判语模板（day_gz 天干决定"当值"，建除决定行为建议）
 JIANCHU_LINES = {
@@ -161,7 +161,7 @@ def auto_score(date: dt.date, huanli) -> dict:
     gan, zhi = day_gz[0], day_gz[1]
     base = SCORING.get(gan, (70, 65, 65))
     bars = {"事业": base[0], "财运": base[1], "感情": base[2]}
-    bars["综合"] = round((bars["事业"] + bars["财运"] + bars["感情"] + 70) / 4)
+    bars["综合"] = round((bars["事业"] + bars["财运"] + bars["感情"]) / 3)
     jc = huanli["jianchu"].rstrip("日")
     l1, l2 = JIANCHU_LINES.get(jc, JIANCHU_LINES["定"])
     harm = HARM.get(zhi, "丑午害财")
@@ -336,11 +336,6 @@ def main():
     d.rectangle([0, 0, W, TOP_H], fill=0)
     d.text((10, TOP_H // 2), "八字运势", font=f_top, fill=255, anchor="lm")
     d.text((W - 10, TOP_H // 2), cfg["date"], font=f_date, fill=255, anchor="rm")
-
-    # 八字档案行（顶栏下方，小字；birth 超宽截断）
-    profile_y = 46
-    profile = fit_width(d, f"命盘 {cfg['birth']} · {cfg['gender']}", f_small, W - 20)
-    d.text((W // 2, profile_y), profile, font=f_small, fill=0, anchor="mm")
 
     # ---- 右：今日运势 ----
     title_y = 62
