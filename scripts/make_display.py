@@ -9,7 +9,8 @@
 八字档案：需填写生辰八字四柱 + 性别（--birth + --gender）。
   重要备注：AI 根据出生年月日/时自动生成八字（四柱干支）的错误概率很大，
   强烈建议使用专业八字排盘工具（如元亨利贞、八字排盘等）生成八字后，再手动填入本脚本。
-  默认值 癸亥年 乙卯月 癸亥日 戊午时（男）仅为占位示例，请勿直接用于真实测算。
+  仓库内默认值为虚拟占位（甲子年 丙子月 壬子日 乙亥时，男），请勿直接用于真实测算；
+  本地真实八字写在项目根目录 local_config.py（已被 .gitignore 排除，不会提交）。
 
 数据源（cron 每日运行时自动生成，无需手动维护）：
   - 左栏黄历（lunar/daygz/jianchu/zhishen/chongsha/bz1/bz2）：lunar_python 排本日黄历
@@ -47,13 +48,35 @@ FONT_CANDIDATES = [
 ]
 _font_path = next((p for p in FONT_CANDIDATES if p and os.path.exists(p)), None)
 
-# --- 固定八字档案（喜用神，用于吉色） ---
+# --- 八字档案（仓库内为虚拟占位值；本地真实值由 local_config.py 覆盖，勿提交） ---
 ARCHIVE = {
-    "birth": "癸亥年 乙卯月 癸亥日 戊午时",
+    "birth": "甲子年 丙子月 壬子日 乙亥时",
     "gender": "男",
     "xiyong": "木",
-    "jilv_color": "绿色",  # 喜用木 → 吉色
+    "jilv_color": "绿色",
 }
+
+
+def _load_local_archive():
+    """加载项目根目录 local_config.py（被 .gitignore 排除）里的真实八字档案。"""
+    global ARCHIVE
+    base = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    local_path = os.path.join(base, "local_config.py")
+    if os.path.exists(local_path):
+        try:
+            import importlib.util
+            spec = importlib.util.spec_from_file_location("zectrix_bazi_local", local_path)
+            mod = importlib.util.module_from_spec(spec)
+            spec.loader.exec_module(mod)
+            local = getattr(mod, "LOCAL_ARCHIVE", None) or {}
+            for key in ("birth", "gender", "xiyong", "jilv_color"):
+                if key in local:
+                    ARCHIVE[key] = local[key]
+        except Exception as e:
+            print(f"WARN: local_config.py 加载失败（{e}），使用仓库虚拟八字", file=sys.stderr)
+
+
+_load_local_archive()
 
 # --- 日干 → 喜神/财神 传统口诀 ---
 GANS = "甲乙丙丁戊己庚辛壬癸"

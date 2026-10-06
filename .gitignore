@@ -1,3 +1,5 @@
 .venv/
 __pycache__/
 *.pyc
+# 本地真实八字档案（勿提交）
+local_config.py

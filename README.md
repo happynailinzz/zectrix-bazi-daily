@@ -2,7 +2,7 @@
 
 Zectrix NOTE4 墨水屏「八字每日运势」插件，输出原生 400x300 1-bit（纯黑/白）PNG，页面固定第 4 页。
 
-固定八字档案：`癸亥年 乙卯月 癸亥日 戊午时`（男）。
+仓库默认八字档案为虚拟占位：`甲子年 丙子月 壬子日 乙亥时`（男），勿直接用于真实测算。本地真实八字请写入项目根目录 `local_config.py`（已被 `.gitignore` 排除，不会提交到 GitHub）。
 
 字体：`assets/fonts/Zfull.ttf` 点阵字体（与 zectrix-morning-brief、zectrix-nba-board 共用），1:1 绘制，1BPP 下最清晰。
 
@@ -20,7 +20,7 @@ Zectrix NOTE4 墨水屏「八字每日运势」插件，输出原生 400x300 1-b
 | 底栏·财神 | 正南 | `lunar_python` `getPositionCaiDesc()` |
 | 底栏·吉色 | 绿色 | 固定八字档案喜用神（木→绿），`ARCHIVE['jilv_color']` |
 | 右栏·评分/判语 | 综合68 / 事业75 / 财运60 / 感情65 / 比肩当值宜守成… | 当日日干 × 建除简表推演（`SCORING` + `JIANCHU_LINES`），属个人化简表，可手动覆盖 |
-| 顶栏·命盘 | 癸亥年 乙卯月 癸亥日 戊午时·男 | `ARCHIVE` 固定档案，**建议专业排盘工具生成后填入**，勿依赖 AI 自动推算 |
+| 顶栏·命盘 | 甲子年 丙子月 壬子日 乙亥时·男（仓库虚拟值） | `ARCHIVE` 固定档案（本地可被 `local_config.py` 覆盖），**初始化时用专业排盘工具填入真实四柱 + 性别**，勿依赖 AI 自动推算 |
 
 > 左栏黄历为公开历法信息（当日黄历，不含个人命盘），可信赖。
 > 右栏评分/判语为「固定档案 × 当日干支」的简表推演，仅供参考，可按需手动覆盖。
@@ -46,7 +46,7 @@ ZECTRIX_NO_PUSH=1 .venv/bin/python scripts/make_display.py --push
 
 | 参数 | 默认 | 说明 |
 |---|---|---|
-| `--birth` | 癸亥年 乙卯月 癸亥日 戊午时 | 生辰八字四柱（建议专业工具生成后填入） |
+| `--birth` | 甲子年 丙子月 壬子日 乙亥时（仓库虚拟值） | 生辰八字四柱（**初始化时**用专业工具生成真实四柱填入；本地可存 `local_config.py`） |
 | `--gender` | 男 | 性别（男/女） |
 | `--date` | 今天 | 显示日期 YYYY-MM-DD |
 | `--out` | /tmp/zectrix-bazi-daily.png | 输出 PNG 路径 |
@@ -65,6 +65,24 @@ ZECTRIX_NO_PUSH=1 .venv/bin/python scripts/make_display.py --push
 
 推送端点：`POST https://cloud.zectrix.com/open/v1/devices/<MAC>/display/image`，
 multipart 字段 `pageId=4`、`dither=false`、`images=<png>`。
+
+## 本地配置真实八字（不提交到 GitHub）
+
+仓库内 `ARCHIVE` 是虚拟占位值（甲子年 丙子月 壬子日 乙亥时，男），仅供演示版面。
+真实四柱 + 性别请写入项目根目录 `local_config.py`（该文件已在 `.gitignore` 中排除）：
+
+```python
+# local_config.py
+LOCAL_ARCHIVE = {
+    "birth": "你的年柱 月柱 日柱 时柱",   # 用专业排盘工具生成
+    "gender": "男",                        # 或 女
+    "xiyong": "木",                        # 喜用神（决定吉色）
+    "jilv_color": "绿色",
+}
+```
+
+脚本启动时会自动加载 `local_config.py` 覆盖仓库虚拟值；若该文件不存在，则回退到虚拟档案。
+这样 VPS 上 cron 每日运行时也读到的是本地真实八字，而 GitHub 仓库保持干净无个人信息。
 
 ## GitHub 版本管理与安装到 VPS
 
